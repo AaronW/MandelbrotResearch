@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <GLUT/glut.h>
 
+
 #define ImageHeight 480
 #define ImageWidth 640
 #define false 0
@@ -28,6 +29,7 @@ void setpixel(int iterations,int x,int y) {
     glFlush();                          // Always need to flush to write out
 }
 
+// Function taken from below address and modified by myself slightly to work with my code.
 // http://warp.povusers.org/Mandelbrot/
 void mandelbrot() {
     double MinRe = -2.0;
@@ -37,13 +39,13 @@ void mandelbrot() {
     double Re_factor = (MaxRe-MinRe)/(ImageWidth-1);
     double Im_factor = (MaxIm-MinIm)/(ImageHeight-1);
     
-    for(unsigned y=0; y<ImageHeight; ++y) {
+    for(unsigned y=0; y<ImageHeight; ++y) {         // Progress through the image, row by row.
         double c_im = MaxIm - y*Im_factor;
-        for(unsigned x=0; x<ImageWidth; ++x) {
+        for(unsigned x=0; x<ImageWidth; ++x) {      // Left to right across the current row
             double c_re = MinRe + x*Re_factor;
             double Z_re = c_re, Z_im = c_im;
             unsigned int n;                         // was unsigned c99 for-loop declaration in original
-            for(n=0; n<MAXITER; ++n) {
+            for(n=0; n<MAXITER; ++n) {              // Count those iterations!
                 double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
                 if(Z_re2 + Z_im2 > 4) {
                     break;                          // Escapes! NOT in the M-Set!
@@ -51,7 +53,7 @@ void mandelbrot() {
                 Z_im = 2*Z_re*Z_im + c_im;
                 Z_re = Z_re2 - Z_im2 + c_re;
             }
-            setpixel(n,x,y);                        // Plot the point
+            setpixel(n,x,y);                        // Plot the point (n is the number of iterations)
         }
     }
 }
@@ -86,7 +88,7 @@ int main(int argc, char** argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(640, 480);
-    glutCreateWindow("Mandelbrot OpenGL by Aaron Weinberger");
+    glutCreateWindow("Mandelbrot OpenGL");
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutIdleFunc(idle);
