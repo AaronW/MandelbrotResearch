@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		93672A241305E5DE0081BF4C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 93672A231305E5DE0081BF4C /* main.c */; };
+		93672A631305EC890081BF4C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93672A621305EC890081BF4C /* OpenGL.framework */; };
+		93672A661305ECB60081BF4C /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 93672A651305ECB60081BF4C /* GLUT.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -26,6 +28,8 @@
 		93672A1F1305E5DE0081BF4C /* MandelGL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MandelGL; sourceTree = BUILT_PRODUCTS_DIR; };
 		93672A231305E5DE0081BF4C /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		93672A251305E5DE0081BF4C /* MandelGL.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = MandelGL.1; sourceTree = "<group>"; };
+		93672A621305EC890081BF4C /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OpenGL.framework; sourceTree = "<group>"; };
+		93672A651305ECB60081BF4C /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = GLUT.framework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +37,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93672A631305EC890081BF4C /* OpenGL.framework in Frameworks */,
+				93672A661305ECB60081BF4C /* GLUT.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -42,6 +48,8 @@
 		93672A141305E5DE0081BF4C = {
 			isa = PBXGroup;
 			children = (
+				93672A651305ECB60081BF4C /* GLUT.framework */,
+				93672A621305EC890081BF4C /* OpenGL.framework */,
 				93672A221305E5DE0081BF4C /* MandelGL */,
 				93672A201305E5DE0081BF4C /* Products */,
 			);
@@ -124,7 +132,6 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -153,7 +160,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -164,8 +176,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -190,6 +207,7 @@
 				93672A2A1305E5DE0081BF4C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
