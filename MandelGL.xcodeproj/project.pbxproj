@@ -26,6 +26,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		93519C4C1309839A0050BB18 /* README */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README; sourceTree = "<group>"; };
 		93672A1F1305E5DE0081BF4C /* MandelGL */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MandelGL; sourceTree = BUILT_PRODUCTS_DIR; };
 		93672A231305E5DE0081BF4C /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		93672A251305E5DE0081BF4C /* MandelGL.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = MandelGL.1; sourceTree = "<group>"; };
@@ -52,6 +53,7 @@
 		93672A141305E5DE0081BF4C = {
 			isa = PBXGroup;
 			children = (
+				93519C4C1309839A0050BB18 /* README */,
 				93672A651305ECB60081BF4C /* GLUT.framework */,
 				93672A621305EC890081BF4C /* OpenGL.framework */,
 				93672A221305E5DE0081BF4C /* MandelGL */,
