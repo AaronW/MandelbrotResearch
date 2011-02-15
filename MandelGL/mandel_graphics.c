@@ -34,7 +34,7 @@ void display(void) {
     }
     if(guiMethod==9) {
         //printArray();
-        mandelbrot();
+        mandelSingle();
     }
     glutSwapBuffers();  // Swap background buffer with foreground to display to user
 }
