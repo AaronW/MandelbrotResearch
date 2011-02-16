@@ -19,17 +19,6 @@ const double MaxIm = MinIm+(MaxRe-MinRe)*IMAGEHEIGHT/IMAGEWIDTH;
 const double Re_factor = (MaxRe-MinRe)/(IMAGEWIDTH-1);
 const double Im_factor = (MaxIm-MinIm)/(IMAGEHEIGHT-1);
 
-// Thread Arguments
-struct thread_data {
-    int thread_id;
-    double MinRe;       // Minimum real
-    double MaxRe;       // Maximum real
-    double MinIm;       // Minimum imaginary
-    double MaxIm;       // Maximum imaginary
-    double Re_factor;
-    double Im_factor;
-};
-struct thread_data thread_data_array[NUM_THREADS];          // Array to hold thread arguments structs
 int y_pick;                                                 // Inspired by shootout code
 pthread_mutex_t y_mutex = PTHREAD_MUTEX_INITIALIZER;        // Inspired by shootout code
 
@@ -38,11 +27,9 @@ unsigned int countSingle[IMAGEWIDTH][IMAGEHEIGHT];                   // Store it
 
 // Parallel implementation
 // TODO Should probably rename this "cal_Row()" or calRowPThread() or something equally informative...
-static void * cal_pixel(void *threadarg) {          //void *cal_pixel(void *threadarg) {
-    struct thread_data *my_data;                    // Hold a local copy of the data
-    my_data = (struct thread_data *) threadarg;     // Pass the arguments from the struct
-    int y;              // The current row      //int y = my_data->y;
-    double c_im = my_data->MaxIm - y*my_data->Im_factor;   //double c_im = my_data->MaxIm - my_data->y*my_data->Im_factor;
+void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, in case it breaks again.
+    int y;                                  // The current row
+    double c_im = MaxIm - y*Im_factor;
 
     for(;;) {                               // Loop forever till thread exits itself below
         pthread_mutex_lock(&y_mutex);       // So only one thread picks a specific y-value
@@ -53,9 +40,9 @@ static void * cal_pixel(void *threadarg) {          //void *cal_pixel(void *thre
             pthread_exit(NULL);                     // return NULL;
 
         for(int x=0; x<IMAGEWIDTH; ++x) {           // Left to right across the current row
-            double c_re = my_data->MinRe + x*my_data->Re_factor;
+            double c_re = MinRe + x*Re_factor;
             double Z_re = c_re, Z_im = c_im;        //double Z_re = c_re, Z_im = my_data->c_im;
-            int n;                                  // Need declared outside of for() loop so we can store iteration count!
+            unsigned int n;                                  // Need declared outside of for() loop so we can store iteration count!
             for(n=0; n<MAXITER; ++n) {              // Count those iterations!
                 double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
                 if(Z_re2 + Z_im2 > 4) {
@@ -64,7 +51,7 @@ static void * cal_pixel(void *threadarg) {          //void *cal_pixel(void *thre
                 Z_im = 2*Z_re*Z_im + c_im;          //Z_im = 2*Z_re*Z_im + my_data->c_im;
                 Z_re = Z_re2 - Z_im2 + c_re;
             }
-            //setpixel(n,x,my_data->y);             // Plot the point (n is the number of iterations)
+            //setpixel(n,x,y);             // Plot the point (n is the number of iterations)
             countPThread[x][y] = n;                       // Need to store the iteration counts since plotting is not thread safe!
         }
         
@@ -74,28 +61,11 @@ static void * cal_pixel(void *threadarg) {          //void *cal_pixel(void *thre
 }
 // PThread implementation
 void mandelPthread() {
-    /*double MinRe = -2.0;
-    double MaxRe = 1.0;
-    double MinIm = -1.2;
-    double MaxIm = MinIm+(MaxRe-MinRe)*IMAGEHEIGHT/IMAGEWIDTH;
-    double Re_factor = (MaxRe-MinRe)/(IMAGEWIDTH-1);
-    double Im_factor = (MaxIm-MinIm)/(IMAGEHEIGHT-1);*/
-    
     int rc, t;                                      // For pthreads
     pthread_t threads[NUM_THREADS];                 // The pthreads array
     
     for(t=0;t<NUM_THREADS;t++) {
-        thread_data_array[t].thread_id = t;         // Build the thread structures so they have necessary info
-        thread_data_array[t].MinRe = MinRe;
-        thread_data_array[t].MaxRe = MaxRe;
-        thread_data_array[t].MinIm = MinIm;
-        thread_data_array[t].MaxIm = MaxIm;
-        thread_data_array[t].Re_factor = Re_factor;
-        thread_data_array[t].Im_factor = Im_factor;
-        //thread_data_array[t].c_im = c_im;
-        
-        rc = pthread_create(&threads[t], NULL, cal_pixel, 
-                            (void *) &thread_data_array[t]);
+        rc = pthread_create(&threads[t], NULL, cal_pixel, (void *) t);
         if (rc) {                                   // Basic error checking.
             printf("ERROR; return code from pthread_create() is %d\n", rc);
             exit(-1);
@@ -112,13 +82,6 @@ void mandelPthread() {
 // Function taken from below address and modified by myself slightly to work with my code.
 // http://warp.povusers.org/Mandelbrot/
 void mandelSingle() {
-    /*double MinRe = -2.0;
-    double MaxRe = 1.0;
-    double MinIm = -1.2;
-    double MaxIm = MinIm+(MaxRe-MinRe)*IMAGEHEIGHT/IMAGEWIDTH;
-    double Re_factor = (MaxRe-MinRe)/(IMAGEWIDTH-1);
-    double Im_factor = (MaxIm-MinIm)/(IMAGEHEIGHT-1);*/
-    
     for(int y=0; y<IMAGEHEIGHT; ++y) {         // Progress through the image, row by row.
         double c_im = MaxIm - y*Im_factor;
         for(int x=0; x<IMAGEWIDTH; ++x) {      // Left to right across the current row
@@ -156,7 +119,6 @@ int compareCounts() {
 }
 
 // Print the given array from a particular Mandelbrot implementation.
-//void printArray(int counts[IMAGEWIDTH][IMAGEHEIGHT]) {
 void printArray() {
     if(guiMethod==1) {                          // SingleThreaded
         for(int i=0; i<IMAGEWIDTH; i++) {
@@ -181,7 +143,7 @@ void timer() {
     time_t t0, t1;
     clock_t c0, c1;
     // TIME THE SINGLE THREADED VERSION
-    t0 = time(NULL);                //Initialize the timers
+    t0 = time(NULL);                 //Initialize the timers
     c0 = clock();
     printf("SINGLE THREAD\n");
     printf("\tbegin (wall):     %ld\n", (long) t0);
@@ -223,7 +185,6 @@ int main(int argc, char** argv) {
         double succRate = (1 - (double)diffs/(double)(IMAGEWIDTH*IMAGEHEIGHT))*100;
         printf("NOT EQUAL %d differences out of %d total!\n%.2f%% success rate\n", diffs, IMAGEHEIGHT*IMAGEWIDTH,succRate);
     }
-
     
     int choice;                                             // Whether or not to display a GUI representation of the Mandelbrot set.
     printf("Would you like the GUI displayed? (0-N 1-Y 9-DEMO MODE): ");
@@ -241,17 +202,6 @@ int main(int argc, char** argv) {
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
         glutInitWindowSize(IMAGEWIDTH, IMAGEHEIGHT);
         glutCreateWindow("Mandelbrot OpenGL");
-        glutDisplayFunc(display);
-        glutReshapeFunc(reshape);
-        glutIdleFunc(idle);
-        glutMainLoop();
-    } else if(choice==9){                        // DEMO MODE CODE
-        DEMO = TRUE;
-        // GUI DISPLAY CODE
-        glutInit(&argc, argv);
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-        glutInitWindowSize(IMAGEWIDTH, IMAGEHEIGHT);
-        glutCreateWindow("Mandelbrot OpenGL DEMO");
         glutDisplayFunc(display);
         glutReshapeFunc(reshape);
         glutIdleFunc(idle);
