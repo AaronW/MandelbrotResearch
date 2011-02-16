@@ -10,7 +10,7 @@
 #define FALSE 0
 #define TRUE 1
 #define MAXITER 100
-#define NUM_THREADS 2
+#define NUM_THREADS 4
 int guiMethod;
 // Necessary function prototypes
 void mandelPthread();

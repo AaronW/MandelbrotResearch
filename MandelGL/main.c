@@ -19,30 +19,32 @@ const double MaxIm = MinIm+(MaxRe-MinRe)*IMAGEHEIGHT/IMAGEWIDTH;
 const double Re_factor = (MaxRe-MinRe)/(IMAGEWIDTH-1);
 const double Im_factor = (MaxIm-MinIm)/(IMAGEHEIGHT-1);
 
-int y_pick;                                                 // Inspired by shootout code
 pthread_mutex_t y_mutex = PTHREAD_MUTEX_INITIALIZER;        // Inspired by shootout code
-
-unsigned int countPThread[IMAGEWIDTH][IMAGEHEIGHT];                  // The iteration counts, countPThread[x][y]
-unsigned int countSingle[IMAGEWIDTH][IMAGEHEIGHT];                   // Store iteration counts of single threaded implementation
+int y_pick;                                                 // Inspired by shootout code
+// TODO IS THE MUTEX ABOVE LOCKING MY ARRAYS TOO!?
+int countPThread[IMAGEWIDTH][IMAGEHEIGHT];                  // The iteration counts, countPThread[x][y]
+int countSingle[IMAGEWIDTH][IMAGEHEIGHT];                   // Store iteration counts of single threaded implementation
 
 // Parallel implementation
 // TODO Should probably rename this "cal_Row()" or calRowPThread() or something equally informative...
 void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, in case it breaks again.
     int y;                                  // The current row
-    double c_im = MaxIm - y*Im_factor;
+    //double c_im = MaxIm - y*Im_factor;
 
     for(;;) {                               // Loop forever till thread exits itself below
         pthread_mutex_lock(&y_mutex);       // So only one thread picks a specific y-value
         y = y_pick;                         // Store locally which row we're working on currently
-        y_pick++;                           // Increment the global y_pick mutex so the next thread works on next row
+        //y_pick++;                           // Increment the global y_pick mutex so the next thread works on next row
+        ++y_pick;       // Was this backwards?
         pthread_mutex_unlock(&y_mutex);     // Unlock the mutex so the other threads can access it now
-        if(y>=IMAGEHEIGHT)      //if (y >= MAXITER-1)         // Should this be MAXITER or MAXITER-1?
+        double c_im = MaxIm - y*Im_factor;  // TODO THIS LINE MIGHT BE CAUSING SLOW DOWN! Does it run too many times compared to single thread?
+        if(y>=IMAGEHEIGHT) {
             pthread_exit(NULL);                     // return NULL;
-
+        }
         for(int x=0; x<IMAGEWIDTH; ++x) {           // Left to right across the current row
             double c_re = MinRe + x*Re_factor;
             double Z_re = c_re, Z_im = c_im;        //double Z_re = c_re, Z_im = my_data->c_im;
-            unsigned int n;                                  // Need declared outside of for() loop so we can store iteration count!
+            int n;                         // Need declared outside of for() loop so we can store iteration count!
             for(n=0; n<MAXITER; ++n) {              // Count those iterations!
                 double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
                 if(Z_re2 + Z_im2 > 4) {
@@ -52,19 +54,18 @@ void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, 
                 Z_re = Z_re2 - Z_im2 + c_re;
             }
             //setpixel(n,x,y);             // Plot the point (n is the number of iterations)
-            countPThread[x][y] = n;                       // Need to store the iteration counts since plotting is not thread safe!
+            countPThread[x][y] = n;                 // Need to store the iteration counts since plotting is not thread safe!
         }
         
     }
-    // Don't think I really want to exit below! Should be exiting as above in if(y>=IMAGEHEIGHT)!
-    //pthread_exit(NULL);                           // Exit, also necessary to silence the compiler warnings.
 }
+
 // PThread implementation
 void mandelPthread() {
     int rc, t;                                      // For pthreads
     pthread_t threads[NUM_THREADS];                 // The pthreads array
     
-    for(t=0;t<NUM_THREADS;t++) {
+    for(t=0; t<NUM_THREADS; t++) {
         rc = pthread_create(&threads[t], NULL, cal_pixel, (void *) t);
         if (rc) {                                   // Basic error checking.
             printf("ERROR; return code from pthread_create() is %d\n", rc);
@@ -176,6 +177,7 @@ void consoleUI() {
 
 // Main driver class
 int main(int argc, char** argv) {
+    y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0!
     timer();                        // Call the different implementations and time them
     
     int diffs = compareCounts();
