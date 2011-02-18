@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <GLUT/glut.h>
 #include <pthread.h>
+#include <dispatch/dispatch.h>
 #include "mandel_graphics.h"        // OpenGL Graphic functions I wrote
 #include "main.h"                   // The #defines needed for this program to run.
 
@@ -24,12 +25,12 @@ int y_pick;                                                 // Inspired by shoot
 // TODO IS THE MUTEX ABOVE LOCKING MY ARRAYS TOO!?
 int countPThread[IMAGEWIDTH][IMAGEHEIGHT];                  // The iteration counts, countPThread[x][y]
 int countSingle[IMAGEWIDTH][IMAGEHEIGHT];                   // Store iteration counts of single threaded implementation
+int countDispatch[IMAGEWIDTH][IMAGEHEIGHT];                 // the libdispatch result array
 
 // Parallel implementation
 // TODO Should probably rename this "cal_Row()" or calRowPThread() or something equally informative...
 void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, in case it breaks again.
     int y;                                  // The current row
-    //double c_im = MaxIm - y*Im_factor;
 
     for(;;) {                               // Loop forever till thread exits itself below
         pthread_mutex_lock(&y_mutex);       // So only one thread picks a specific y-value
@@ -80,6 +81,37 @@ void mandelPthread() {
     // TODO Print out the whole image now
 }
 
+// The mandelbrot implementation under libdispatch.h
+void mandelDispatch() {
+    dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    
+    for(int i=0; i<IMAGEHEIGHT; ++i) {
+        //dispatch_async(aQueue, ^cal_dispatch(i));
+        dispatch_async(aQueue, ^{    // Block declaration, inline style.
+            
+            double c_im = MaxIm - i*Im_factor;  // TODO THIS LINE MIGHT BE CAUSING SLOW DOWN! Does it run too many times compared to single thread?
+            if(i>=IMAGEHEIGHT) {
+                printf("invalid row! (dispatch)\n");                  // TODO Better error handling here for libdispatch version
+            }
+            for(int x=0; x<IMAGEWIDTH; ++x) {           // Left to right across the current row
+                double c_re = MinRe + x*Re_factor;
+                double Z_re = c_re, Z_im = c_im;        //double Z_re = c_re, Z_im = my_data->c_im;
+                int n;                                  // Need declared outside of for() loop so we can store iteration count!
+                for(n=0; n<MAXITER; ++n) {              // Count those iterations!
+                    double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
+                    if(Z_re2 + Z_im2 > 4) {
+                        break;                          // Escapes! NOT in the M-Set!
+                    }
+                    Z_im = 2*Z_re*Z_im + c_im;          //Z_im = 2*Z_re*Z_im + my_data->c_im;
+                    Z_re = Z_re2 - Z_im2 + c_re;
+                }
+                countDispatch[x][i] = n;                // Need to store the iteration counts since plotting is not thread safe!
+            }
+        });
+        
+    }
+}
+
 // Function taken from below address and modified by myself slightly to work with my code.
 // http://warp.povusers.org/Mandelbrot/
 void mandelSingle() {
@@ -116,6 +148,16 @@ int compareCounts() {
             }
         }
     }
+    
+    for(int i=0; i<IMAGEWIDTH; i++) {
+        for(int j=0; j<IMAGEHEIGHT; j++) {
+            if(countSingle[i][j]!=countDispatch[i][j]) {
+                printf("Single[%d][%d]=%d BUT dispatch[%d][%d]=%d\n",i,j,countSingle[i][j],i,j,countDispatch[i][j]);
+                diffCount++;                    // Found a difference!
+            }
+        }
+    }
+    
     return diffCount;                           // The number of differences between the implementations.
 }
 
@@ -141,15 +183,15 @@ void printArray() {
 
 // Time the different implementations
 void timer() {
-    time_t t0, t1;
-    clock_t c0, c1;
+    time_t t0, t1;                  // Wall clock time
+    clock_t c0, c1;                 // Clock cycle time
     // TIME THE SINGLE THREADED VERSION
-    t0 = time(NULL);                 //Initialize the timers
+    t0 = time(NULL);                //Initialize the timers
     c0 = clock();
     printf("SINGLE THREAD\n");
     printf("\tbegin (wall):     %ld\n", (long) t0);
     printf("\tbegin (cpu):      %d\n", (int) c0);
-    mandelSingle();                  // Call the single threaded implementation
+    mandelSingle();                 // Call the single threaded implementation
     t1 = time(NULL);
     c1 = clock();
     printf ("\tend (wall):              %ld\n", (long) t1);
@@ -169,6 +211,19 @@ void timer() {
     printf ("\tend (CPU);               %d\n", (int) c1);
     printf ("\telapsed wall clock time: %ld\n", (long) (t1 - t0));
     printf ("\telapsed CPU time:        %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
+    // LIBDISPATCH
+    t0 = time(NULL);                // Null out timers so we can reuse
+    c0 = clock();
+    printf("LIBDISPATCH Threads");
+    printf("\tbegin (wall):     %ld\n", (long) t0);
+    printf("\tbegin (cpu):      %d\n", (int) c0);
+    mandelDispatch();               // Call the libdispatch.h implementation
+    t1 = time(NULL);
+    c1 = clock();
+    printf ("\tend (wall):              %ld\n", (long) t1);
+    printf ("\tend (CPU);               %d\n", (int) c1);
+    printf ("\telapsed wall clock time: %ld\n", (long) (t1 - t0));
+    printf ("\telapsed CPU time:        %f\n", (float) (c1 - c0)/CLOCKS_PER_SEC);
 }
 
 void consoleUI() {
@@ -180,11 +235,11 @@ int main(int argc, char** argv) {
     y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0!
     timer();                        // Call the different implementations and time them
     
-    int diffs = compareCounts();
+    int diffs = compareCounts();    // Store it so we don't call the function twice or more
     if(diffs == 0)                  // Ensure the implementations generate equivalent output
         printf("Arrays are equal!\n");
     else {
-        double succRate = (1 - (double)diffs/(double)(IMAGEWIDTH*IMAGEHEIGHT))*100;
+        double succRate = (1 - (double)diffs/(double)(IMAGEWIDTH*IMAGEHEIGHT))*100;     // Calculate how wrong the implementation is
         printf("NOT EQUAL %d differences out of %d total!\n%.2f%% success rate\n", diffs, IMAGEHEIGHT*IMAGEWIDTH,succRate);
     }
     
