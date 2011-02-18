@@ -5,8 +5,10 @@
 //  Created by Aaron on 2/13/11.
 //  Copyright 2011 __MyCompanyName__. All rights reserved.
 //
-#define IMAGEHEIGHT 480         //#define ImageHeight 480
-#define IMAGEWIDTH 640          //#define ImageWidth 640
+//#define IMAGEHEIGHT 480         //#define ImageHeight 480
+//#define IMAGEWIDTH 640          //#define ImageWidth 640
+#define IMAGEHEIGHT 768
+#define IMAGEWIDTH 1024
 #define FALSE 0
 #define TRUE 1
 #define MAXITER 100

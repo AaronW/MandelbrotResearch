@@ -77,8 +77,6 @@ void mandelPthread() {
         pthread_join(threads[k], NULL);     // Wait for them all to finish and join()!
     }
     pthread_mutex_destroy(&y_mutex);        // Mutex no longer needed, destroy it.
-    
-    // TODO Print out the whole image now
 }
 
 // The mandelbrot implementation under libdispatch.h
@@ -99,7 +97,7 @@ void mandelDispatch() {
                 int n;                                  // Need declared outside of for() loop so we can store iteration count!
                 for(n=0; n<MAXITER; ++n) {              // Count those iterations!
                     double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
-                    if(Z_re2 + Z_im2 > 4) {
+                    if(Z_re2 + Z_im2 >= 4) {
                         break;                          // Escapes! NOT in the M-Set!
                     }
                     Z_im = 2*Z_re*Z_im + c_im;          //Z_im = 2*Z_re*Z_im + my_data->c_im;
@@ -148,7 +146,6 @@ int compareCounts() {
             }
         }
     }
-    
     for(int i=0; i<IMAGEWIDTH; i++) {
         for(int j=0; j<IMAGEHEIGHT; j++) {
             if(countSingle[i][j]!=countDispatch[i][j]) {
@@ -157,7 +154,6 @@ int compareCounts() {
             }
         }
     }
-    
     return diffCount;                           // The number of differences between the implementations.
 }
 
@@ -178,7 +174,6 @@ void printArray() {
     } else {
         printf("Invalid in printArray()\n"); 
     }
-
 }
 
 // Time the different implementations
