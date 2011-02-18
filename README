@@ -4,4 +4,4 @@ February 14, 2011
 
 This program is intended to be an investigation into the claimed efficiency and ease of use of Apple's Grand Central Dispatch (GCD), which is also available on non-apple operating systems under the name libdispatch.h
 
-My libdispatch implementation is NOT currently in the project.  I'm working on getting the framework and other implementations up and running first.
+I've recently added support for libdispatch in my program, though it is not 100% correct.  Currently generating over 99% accurate matrices when using 640x480 or 1024x768 dimensions.
