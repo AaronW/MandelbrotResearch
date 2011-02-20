@@ -12,7 +12,6 @@
 #include "mandel_graphics.h"        // OpenGL Graphic functions I wrote
 #include "main.h"                   // The #defines needed for this program to run.
 
-int DEMO = FALSE;                   // Quick demo mode to plot the OpenGL Singlethread mandelbrot
 const double MinRe = -2.0;          // Setup the necessary variables, should I take time to remove globals and pass them around?
 const double MaxRe = 1.0;           // CONSTANTS, except for DEMO above.
 const double MinIm = -1.2;
@@ -27,24 +26,21 @@ int countPThread[IMAGEWIDTH][IMAGEHEIGHT];                  // The iteration cou
 int countSingle[IMAGEWIDTH][IMAGEHEIGHT];                   // Store iteration counts of single threaded implementation
 int countDispatch[IMAGEWIDTH][IMAGEHEIGHT];                 // the libdispatch result array
 
-// Parallel implementation
-// TODO Should probably rename this "cal_Row()" or calRowPThread() or something equally informative...
+// Parallel implementation      TODO Should probably rename this "cal_Row()" or calRowPThread() or something equally informative...
 void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, in case it breaks again.
     int y;                                  // The current row
-
     for(;;) {                               // Loop forever till thread exits itself below
         pthread_mutex_lock(&y_mutex);       // So only one thread picks a specific y-value
         y = y_pick;                         // Store locally which row we're working on currently
-        //y_pick++;                           // Increment the global y_pick mutex so the next thread works on next row
-        ++y_pick;       // Was this backwards?
+        ++y_pick;                           // Increment our column for the next thread.
         pthread_mutex_unlock(&y_mutex);     // Unlock the mutex so the other threads can access it now
         double c_im = MaxIm - y*Im_factor;  // TODO THIS LINE MIGHT BE CAUSING SLOW DOWN! Does it run too many times compared to single thread?
         if(y>=IMAGEHEIGHT) {
-            pthread_exit(NULL);                     // return NULL;
+            pthread_exit(NULL);             // No more rows, exit the thread.
         }
         for(int x=0; x<IMAGEWIDTH; ++x) {           // Left to right across the current row
             double c_re = MinRe + x*Re_factor;
-            double Z_re = c_re, Z_im = c_im;        //double Z_re = c_re, Z_im = my_data->c_im;
+            double Z_re = c_re, Z_im = c_im;
             int n;                         // Need declared outside of for() loop so we can store iteration count!
             for(n=0; n<MAXITER; ++n) {              // Count those iterations!
                 double Z_re2 = Z_re*Z_re, Z_im2 = Z_im*Z_im;
@@ -83,12 +79,12 @@ void mandelPthread() {
 void mandelDispatch() {
     dispatch_queue_t aQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     
-    for(int i=0; i<IMAGEHEIGHT; ++i) {
+    //for(int y=0; y<IMAGEHEIGHT; ++y) {                  // 'i' is our y variable here.
         //dispatch_async(aQueue, ^cal_dispatch(i));
-        dispatch_async(aQueue, ^{    // Block declaration, inline style.
-            
-            double c_im = MaxIm - i*Im_factor;  // TODO THIS LINE MIGHT BE CAUSING SLOW DOWN! Does it run too many times compared to single thread?
-            if(i>=IMAGEHEIGHT) {
+        //dispatch_async(aQueue, ^{    // Block declaration, inline style.
+        dispatch_apply(IMAGEHEIGHT, aQueue, ^(size_t y) {    
+            double c_im = MaxIm - y*Im_factor;  // TODO THIS LINE MIGHT BE CAUSING SLOW DOWN! Does it run too many times compared to single thread?
+            if(y>=IMAGEHEIGHT) {
                 printf("invalid row! (dispatch)\n");                  // TODO Better error handling here for libdispatch version
             }
             for(int x=0; x<IMAGEWIDTH; ++x) {           // Left to right across the current row
@@ -103,11 +99,11 @@ void mandelDispatch() {
                     Z_im = 2*Z_re*Z_im + c_im;          //Z_im = 2*Z_re*Z_im + my_data->c_im;
                     Z_re = Z_re2 - Z_im2 + c_re;
                 }
-                countDispatch[x][i] = n;                // Need to store the iteration counts since plotting is not thread safe!
+                countDispatch[x][y] = n;                // Need to store the iteration counts since plotting is not thread safe!
             }
         });
         
-    }
+    //}
 }
 
 // Function taken from below address and modified by myself slightly to work with my code.
@@ -127,8 +123,6 @@ void mandelSingle() {
                 Z_im = 2*Z_re*Z_im + c_im;
                 Z_re = Z_re2 - Z_im2 + c_re;
             }
-            if(DEMO==1)
-                setpixel(n,x,y);                        // DEMO mode
             //setpixel(n,x,y);                        // Plot the point (n is the number of iterations)
             countSingle[x][y] = n;                      // Store the iteration counts
         }
@@ -146,7 +140,7 @@ int compareCounts() {
             }
         }
     }
-    for(int i=0; i<IMAGEWIDTH; i++) {
+    for(int i=0; i<IMAGEWIDTH; i++) {           // Check the libdispatch.h resulting array against the sequential.
         for(int j=0; j<IMAGEHEIGHT; j++) {
             if(countSingle[i][j]!=countDispatch[i][j]) {
                 printf("Single[%d][%d]=%d BUT dispatch[%d][%d]=%d\n",i,j,countSingle[i][j],i,j,countDispatch[i][j]);
@@ -225,9 +219,39 @@ void consoleUI() {
     
 }
 
+// Print to file instead of stdout
+void color(FILE *fp, int red, int green, int blue)  {
+	fputc((char)red,fp);
+	fputc((char)green,fp);
+	fputc((char)blue,fp);
+}
+
+// Creates a .ppm file from the given implementation's results.
+// Based on work by Eric R. Weeks http://www.physics.emory.edu/~weeks/software/mand.html
+void ppmArray(int imageArray[IMAGEWIDTH][IMAGEHEIGHT]) {
+    FILE *fp;                                               // Pointer for the file we're creating or overwriting
+    fp = fopen("/Volumes/Macintosh\ HD/Users/aaron/Documents/MandelGL/MandelGL/mandelbrot.ppm", "w"); // NEEDS FULL PATH!!! NOT EVEN ~ WORKS!!!
+	
+	// Header for PPM output
+	fprintf(fp,"P6\n# CREATOR: Aaron Weinberger/MandelbrotPPM based on work by Eric R. Weeks\n");
+	fprintf(fp,"%d %d\n255\n",IMAGEWIDTH,IMAGEHEIGHT);
+    
+    for(int i=0; i<IMAGEWIDTH; i++) {
+        for(int j=0; j<IMAGEHEIGHT; j++) {
+            int iterationCount = imageArray[j][i];  // TODO Why is this printing seemingly backwards?
+            if(iterationCount<MAXITER)              // TODO Remove magic numbers, possibly with something like #define colorOffset
+                color(fp,iterationCount+25,iterationCount+25,iterationCount+25);//color(fp,iterationCount*2,iterationCount/2,iterationCount); // Escapes!
+			else
+                color(fp,0,0,0);                    // Doesn't escape
+        }
+    }
+    fflush(fp);
+    fclose(fp);
+}
+
 // Main driver class
 int main(int argc, char** argv) {
-    y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0!
+    y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0! Fixes a bug I was having, important.
     timer();                        // Call the different implementations and time them
     
     int diffs = compareCounts();    // Store it so we don't call the function twice or more
@@ -239,7 +263,7 @@ int main(int argc, char** argv) {
     }
     
     int choice;                                             // Whether or not to display a GUI representation of the Mandelbrot set.
-    printf("Would you like the GUI displayed? (0-N 1-Y 9-DEMO MODE): ");
+    printf("Would you like the GUI displayed? (0-N 1-Y): ");
     if(scanf("%d",&choice)==0) {
         printf("Bad input, NO(0) autoselected.\n");         // Some initial error checking
         choice=0;
@@ -247,17 +271,25 @@ int main(int argc, char** argv) {
     if(choice == 0) {
         printf("No GUI displayed, exiting now.\n");
     } else if(choice==1) {
-        printf("1 for Single Threaded, 2 for POSIX:\n");
+        printf("1 for Single Threaded, 2 for POSIX, 3 for Libdispatch.h:\n");
         scanf("%d",&guiMethod);                             // TODO Need error checking!
+        if(guiMethod==1)
+            ppmArray(countSingle);
+        else if(guiMethod==2)
+            ppmArray(countPThread);
+        else if(guiMethod==3)
+            ppmArray(countDispatch);
+        else
+            printf("Invalid choice.\n");                    // TODO Better error handling.
         // GUI DISPLAY CODE
-        glutInit(&argc, argv);
+        /*glutInit(&argc, argv);
         glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
         glutInitWindowSize(IMAGEWIDTH, IMAGEHEIGHT);
         glutCreateWindow("Mandelbrot OpenGL");
         glutDisplayFunc(display);
         glutReshapeFunc(reshape);
         glutIdleFunc(idle);
-        glutMainLoop();
+        glutMainLoop();*/
     }
     return EXIT_SUCCESS;
 }
