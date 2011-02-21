@@ -1,7 +1,7 @@
 Programmer: Aaron Weinberger
 Technical Advisor: Dr. Hastings
-February 14, 2011
+February 14, 2011 (Revised 2/21/2011)
 
 This program is intended to be an investigation into the claimed efficiency and ease of use of Apple's Grand Central Dispatch (GCD), which is also available on non-apple operating systems under the name libdispatch.h
 
-I've recently added support for libdispatch in my program, though it is not 100% correct.  Currently generating over 99% accurate matrices when using 640x480 or 1024x768 dimensions.
+The program generates a PPM file at the location specified by the *fp pointer.  For now, users must manually modify this hard coded string to save the file to a proper location on their own machine.
