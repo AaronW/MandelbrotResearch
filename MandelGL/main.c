@@ -6,10 +6,8 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
-#include <GLUT/glut.h>
 #include <pthread.h>
 #include <dispatch/dispatch.h>
-#include "mandel_graphics.h"        // OpenGL Graphic functions I wrote
 #include "main.h"                   // The #defines needed for this program to run.
 
 const double MinRe = -2.0;          // Setup the necessary variables, should I take time to remove globals and pass them around?
@@ -51,7 +49,6 @@ void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, 
                 Z_im = 2*Z_re*Z_im + c_im;
                 Z_re = Z_re2 - Z_im2 + c_re;
             }
-            //setpixel(n,x,y);                      // Plot the point (n is the number of iterations)
             countPThread[x][y] = n;                 // Need to store the iteration counts since plotting is not thread safe!
         }
         
@@ -154,7 +151,6 @@ void mandelSingle() {
                 Z_im = 2*Z_re*Z_im + c_im;
                 Z_re = Z_re2 - Z_im2 + c_re;
             }
-            //setpixel(n,x,y);                        // Plot the point (n is the number of iterations)
             countSingle[x][y] = n;                      // Store the iteration counts
         }
     }
@@ -188,26 +184,6 @@ int compareCounts() {
         }
     }*/
     return diffCount;                           // The number of differences between the implementations.
-}
-
-// Print the given array from a particular Mandelbrot implementation.
-// @deprecated
-void printArray() {
-    if(guiMethod==1) {                          // SingleThreaded
-        for(int i=0; i<IMAGEWIDTH; i++) {
-            for(int j=0;j<IMAGEHEIGHT; j++) {
-                setpixel(i,j,countSingle[i][j]);
-            }
-        }
-    } else if(guiMethod==2) {                   // POSIX Threads
-        for(int i=0; i<IMAGEWIDTH; i++) {
-            for(int j=0;j<IMAGEHEIGHT; j++) {
-                setpixel(i,j,countPThread[i][j]);
-            }
-        }
-    } else {
-        printf("Invalid in printArray()\n"); 
-    }
 }
 
 // Time the different implementations
@@ -317,7 +293,7 @@ int main(int argc, char** argv) {
         printf("NOT EQUAL %d differences out of %d total!\n%.2f%% success rate\n", diffs, IMAGEHEIGHT*IMAGEWIDTH,succRate);
     }
     
-    int choice;                                             // Whether or not to display a GUI representation of the Mandelbrot set.
+    int choice;                                             // Whether or not to display a graphical representation of the Mandelbrot set.
     printf("Would you like the GUI displayed? (0-N 1-Y): ");
     if(scanf("%d",&choice)==0) {
         printf("Bad input, NO(0) autoselected.\n");         // Some initial error checking
@@ -338,15 +314,6 @@ int main(int argc, char** argv) {
             ppmArray(countStride);
         else
             printf("Invalid choice.\n");                    // TODO Better error handling.
-        // GUI DISPLAY CODE
-        /*glutInit(&argc, argv);
-        glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
-        glutInitWindowSize(IMAGEWIDTH, IMAGEHEIGHT);
-        glutCreateWindow("Mandelbrot OpenGL");
-        glutDisplayFunc(display);
-        glutReshapeFunc(reshape);
-        glutIdleFunc(idle);
-        glutMainLoop();*/
     }
     return EXIT_SUCCESS;
 }
