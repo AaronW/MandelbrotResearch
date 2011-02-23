@@ -9,9 +9,9 @@
 #include <pthread.h>
 #include <dispatch/dispatch.h>
 #include "main.h"                   // The #defines needed for this program to run.
-
+#include "log.h"
 const double MinRe = -2.0;          // Setup the necessary variables, should I take time to remove globals and pass them around?
-const double MaxRe = 1.0;           // CONSTANTS, except for DEMO above.
+const double MaxRe = 1.0;           // CONSTANTS! Don't let me do something stupid later please.
 const double MinIm = -1.2;
 const double MaxIm = MinIm+(MaxRe-MinRe)*IMAGEHEIGHT/IMAGEWIDTH;
 const double Re_factor = (MaxRe-MinRe)/(IMAGEWIDTH-1);
@@ -33,9 +33,9 @@ void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, 
         y = y_pick;                         // Store locally which row we're working on currently
         ++y_pick;                           // Increment our column for the next thread.
         pthread_mutex_unlock(&y_mutex);     // Unlock the mutex so the other threads can access it now
-        double c_im = MaxIm - y*Im_factor;  // TODO THIS LINE MIGHT BE CAUSING SLOW DOWN! Does it run too many times compared to single thread?
+        double c_im = MaxIm - y*Im_factor;
         if(y>=IMAGEHEIGHT) {
-            pthread_exit(NULL);             // No more rows, exit the thread.
+            pthread_exit(NULL);                     // No more rows, exit the thread.
         }
         for(int x=0; x<IMAGEWIDTH; ++x) {           // Left to right across the current row
             double c_re = MinRe + x*Re_factor;
@@ -57,6 +57,7 @@ void *cal_pixel(void *threadarg) {          // Note: Used to have to be static, 
 
 // PThread implementation using a work pool.
 void mandelPthread() {
+    y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0! Fixes a bug I was having, important.
     int rc, t;                                      // For pthreads
     pthread_t threads[NUM_THREADS];                 // The pthreads array
     
@@ -70,7 +71,7 @@ void mandelPthread() {
     for(int k=0; k<NUM_THREADS; k++) {
         pthread_join(threads[k], NULL);     // Wait for them all to finish and join()!
     }
-    pthread_mutex_destroy(&y_mutex);        // Mutex no longer needed, destroy it.
+    //pthread_mutex_destroy(&y_mutex);        // Mutex no longer needed, destroy it.
 }
 
 // The mandelbrot implementation under libdispatch.h
@@ -165,29 +166,21 @@ int compareCounts() {
                 printf("Single[%d][%d]=%d BUT POSIX[%d][%d]=%d\n",i,j,countSingle[i][j],i,j,countPThread[i][j]);
                 diffCount++;                    // Found a difference!
             }
-        }
-    }
-    for(int i=0; i<IMAGEWIDTH; i++) {           // Check the libdispatch.h resulting array against the sequential.
-        for(int j=0; j<IMAGEHEIGHT; j++) {
-            if(countSingle[i][j]!=countDispatch[i][j]) {
+            else if(countSingle[i][j]!=countDispatch[i][j]) {
                 printf("Single[%d][%d]=%d BUT dispatch[%d][%d]=%d\n",i,j,countSingle[i][j],i,j,countDispatch[i][j]);
                 diffCount++;                    // Found a difference!
             }
-        }
-    }
-    /*for(int i=0; i<IMAGEWIDTH; i++) {
-        for(int j=0; j<IMAGEHEIGHT; j++) {
-            if(countSingle[i][j]!=countStride[i][j]) {
+            /*else if(countSingle[i][j]!=countStride[i][j]) {
                 printf("Single[%d][%d]=%d BUT stride[%d][%d]=%d\n",i,j,countSingle[i][j],i,j,countStride[i][j]);
                 diffCount++;
-            }
+            }*/
         }
-    }*/
+    }
     return diffCount;                           // The number of differences between the implementations.
 }
 
 // Time the different implementations
-void timer() {
+void timerMain() {
     time_t t0, t1;                  // Wall clock time
     clock_t c0, c1;                 // Clock cycle time
     // TIME THE SINGLE THREADED VERSION
@@ -282,9 +275,9 @@ void ppmArray(int imageArray[IMAGEWIDTH][IMAGEHEIGHT]) {
 
 // Main driver class
 int main(int argc, char** argv) {
-    y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0! Fixes a bug I was having, important.
-    timer();                        // Call the different implementations and time them
-    
+    //y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0! Fixes a bug I was having, important.
+    //timerMain();                        // Call the different implementations and time them
+    logger();
     int diffs = compareCounts();    // Store it so we don't call the function twice or more
     if(diffs == 0)                  // Ensure the implementations generate equivalent output
         printf("Arrays are equal!\n");

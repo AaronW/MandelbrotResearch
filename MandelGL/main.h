@@ -4,8 +4,8 @@
  * Technical Advisor: Dr. Hastings
  * February 11, 2011
  */
-#define IMAGEHEIGHT 1000
-#define IMAGEWIDTH 1000
+#define IMAGEHEIGHT 2000
+#define IMAGEWIDTH 2000
 #define COLOROFFSET 25          // The minimum color for points not in the set.
 #define FALSE 0
 #define TRUE 1
@@ -16,4 +16,5 @@ int guiMethod;                  // Method to output the graphical representation
 // Necessary function prototypes
 void mandelPthread();
 void mandelSingle();
+void mandelDispatch();
 void printArray();

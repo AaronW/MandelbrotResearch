@@ -14,7 +14,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "93672A1E1305E5DE0081BF4C"
-               BuildableName = "MandelGL"
+               BuildableName = "MandelPPM"
                BlueprintName = "MandelPPM"
                ReferencedContainer = "container:MandelPPM.xcodeproj">
             </BuildableReference>
@@ -41,7 +41,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "93672A1E1305E5DE0081BF4C"
-            BuildableName = "MandelGL"
+            BuildableName = "MandelPPM"
             BlueprintName = "MandelPPM"
             ReferencedContainer = "container:MandelPPM.xcodeproj">
          </BuildableReference>
@@ -60,7 +60,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "93672A1E1305E5DE0081BF4C"
-            BuildableName = "MandelGL"
+            BuildableName = "MandelPPM"
             BlueprintName = "MandelPPM"
             ReferencedContainer = "container:MandelPPM.xcodeproj">
          </BuildableReference>

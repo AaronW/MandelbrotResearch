@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		93672A241305E5DE0081BF4C /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 93672A231305E5DE0081BF4C /* main.c */; };
+		93881DCB1314701500FEDC3D /* log.c in Sources */ = {isa = PBXBuildFile; fileRef = 93881DC91314701500FEDC3D /* log.c */; };
+		93881DCF1314A3FC00FEDC3D /* graphics.c in Sources */ = {isa = PBXBuildFile; fileRef = 93881DCD1314A3FC00FEDC3D /* graphics.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,6 +29,10 @@
 		93672A1F1305E5DE0081BF4C /* MandelPPM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MandelPPM; sourceTree = BUILT_PRODUCTS_DIR; };
 		93672A231305E5DE0081BF4C /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		93672A251305E5DE0081BF4C /* MandelGL.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = MandelGL.1; sourceTree = "<group>"; };
+		93881DC91314701500FEDC3D /* log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = log.c; sourceTree = "<group>"; };
+		93881DCA1314701500FEDC3D /* log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = log.h; sourceTree = "<group>"; };
+		93881DCD1314A3FC00FEDC3D /* graphics.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = graphics.c; sourceTree = "<group>"; };
+		93881DCE1314A3FC00FEDC3D /* graphics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphics.h; sourceTree = "<group>"; };
 		939830CD1308D94500E21550 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -64,6 +70,10 @@
 				93672A231305E5DE0081BF4C /* main.c */,
 				939830CD1308D94500E21550 /* main.h */,
 				93672A251305E5DE0081BF4C /* MandelGL.1 */,
+				93881DC91314701500FEDC3D /* log.c */,
+				93881DCA1314701500FEDC3D /* log.h */,
+				93881DCD1314A3FC00FEDC3D /* graphics.c */,
+				93881DCE1314A3FC00FEDC3D /* graphics.h */,
 			);
 			name = MandelPPM;
 			path = MandelGL;
@@ -117,6 +127,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				93672A241305E5DE0081BF4C /* main.c in Sources */,
+				93881DCB1314701500FEDC3D /* log.c in Sources */,
+				93881DCF1314A3FC00FEDC3D /* graphics.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
