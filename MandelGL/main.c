@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <dispatch/dispatch.h>
+#include "graphics.h"               // My graphics functions.
 #include "main.h"                   // The #defines needed for this program to run.
 #include "log.h"
 const double MinRe = -2.0;          // Setup the necessary variables, should I take time to remove globals and pass them around?
@@ -243,7 +244,7 @@ void consoleUI() {
     
 }
 
-// Print to file instead of stdout
+/*// Print to file instead of stdout
 void color(FILE *fp, int red, int green, int blue)  {
 	fputc((char)red,fp);
 	fputc((char)green,fp);
@@ -271,13 +272,12 @@ void ppmArray(int imageArray[IMAGEWIDTH][IMAGEHEIGHT]) {
     }
     fflush(fp);                     // Always flush the buffer to ensure it's all written out.
     fclose(fp);                     // Explicitly close the file now.
-}
+}*/
 
 // Main driver class
 int main(int argc, char** argv) {
-    //y_pick = 0;                     // Shootout inspired, make sure the variable starts at 0! Fixes a bug I was having, important.
-    //timerMain();                        // Call the different implementations and time them
-    logger();
+    printf("Currently logging to a text file.\n");
+    logger();                       // Run the implementations and the timing function.
     int diffs = compareCounts();    // Store it so we don't call the function twice or more
     if(diffs == 0)                  // Ensure the implementations generate equivalent output
         printf("Arrays are equal!\n");
@@ -288,10 +288,12 @@ int main(int argc, char** argv) {
     
     int choice;                                             // Whether or not to display a graphical representation of the Mandelbrot set.
     printf("Would you like the GUI displayed? (0-N 1-Y): ");
-    if(scanf("%d",&choice)==0) {
+    /*if(scanf("%d",&choice)==0) {
         printf("Bad input, NO(0) autoselected.\n");         // Some initial error checking
         choice=0;
-    }
+    }*/
+    //TODO RE ENABLE CHOICE!
+    choice = 3;     // TODO TEMP HARD CODING FOR OVER NIGHT RUNS!
     if(choice == 0) {
         printf("No GUI displayed, exiting now.\n");
     } else if(choice==1) {
