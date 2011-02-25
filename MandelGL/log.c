@@ -1,9 +1,9 @@
-/**
- * Senior Research Project: Mandelbrot Dispatched
- * Programmer: Aaron Weinberger
- * Technical Advisor: Dr. Hastings
- * February 11, 2011
- */
+//
+//  Senior Research Project: Mandelbrot Dispatched
+//  Programmer: Aaron Weinberger
+//  Technical Advisor: Dr. Hastings
+//  February 11, 2011
+//
 #include "log.h"
 #include "main.h"
 #include <time.h>
@@ -11,8 +11,13 @@
 
 // Driver function for this file, handles the repetitions and writing the header.
 void logger() {
+    char logFile[] = "/Volumes/Macintosh HD/Users/aaron/Documents/MandelGL/MandelGL/logfile.txt"; 
+    //printf("Logging to: /Volumes/Macintosh HD/Users/aaron/Documents/MandelGL/MandelGL/logfile.txt");
+    printf("Logging to: %s\n", logFile);
+    fflush(stdout);                                         // Print out logging info
     FILE *fp;                                               // Pointer for the file we're creating or overwriting
-    fp = fopen("/Volumes/Macintosh HD/Users/aaron/Documents/MandelGL/MandelGL/logfile.txt", "a"); // NEEDS FULL PATH!!! NOT EVEN ~ WORKS!!!
+    //fp = fopen("/Volumes/Macintosh HD/Users/aaron/Documents/MandelGL/MandelGL/logfile.txt", "a"); // NEEDS FULL PATH!!! NOT EVEN ~ WORKS!!!
+    fp = fopen(logFile, "a"); // NEEDS FULL PATH!!! NOT EVEN ~ WORKS!!!
     printHeader(fp);
     for(int i=0; i<RUNCOUNT; i++)                           // Run the set of implementations RUNCOUNT times
         timer(fp);

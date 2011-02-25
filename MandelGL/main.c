@@ -1,16 +1,17 @@
-/**
- * Senior Research Project: Mandelbrot Dispatched
- * Programmer: Aaron Weinberger
- * Technical Advisor: Dr. Hastings
- * February 11, 2011
- */
+//
+//  Senior Research Project: Mandelbrot Dispatched
+//  Programmer: Aaron Weinberger
+//  Technical Advisor: Dr. Hastings
+//  February 11, 2011
+//  main.c
+//
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
 #include <dispatch/dispatch.h>
 #include "graphics.h"               // My graphics functions.
 #include "main.h"                   // The #defines needed for this program to run.
-#include "log.h"
+#include "log.h"                    // My logging system.
 const double MinRe = -2.0;          // Setup the necessary variables, should I take time to remove globals and pass them around?
 const double MaxRe = 1.0;           // CONSTANTS! Don't let me do something stupid later please.
 const double MinIm = -1.2;
@@ -18,8 +19,8 @@ const double MaxIm = MinIm+(MaxRe-MinRe)*IMAGEHEIGHT/IMAGEWIDTH;
 const double Re_factor = (MaxRe-MinRe)/(IMAGEWIDTH-1);
 const double Im_factor = (MaxIm-MinIm)/(IMAGEHEIGHT-1);
 
-pthread_mutex_t y_mutex = PTHREAD_MUTEX_INITIALIZER;        // Inspired by shootout code
-int y_pick;                                                 // Inspired by shootout code
+pthread_mutex_t y_mutex = PTHREAD_MUTEX_INITIALIZER;        // Mutex to ensure each pthread gets a unique y value.
+int y_pick;                                                 // y value to be locked by the mutex for pthreads.
 // TODO IS THE MUTEX ABOVE LOCKING MY ARRAYS TOO!?
 int countPThread[IMAGEWIDTH][IMAGEHEIGHT];                  // The iteration counts, countPThread[x][y]
 int countSingle[IMAGEWIDTH][IMAGEHEIGHT];                   // Store iteration counts of single threaded implementation
@@ -292,13 +293,14 @@ int main(int argc, char** argv) {
         printf("Bad input, NO(0) autoselected.\n");         // Some initial error checking
         choice=0;
     }*/
-    //TODO RE ENABLE CHOICE!
-    choice = 3;     // TODO TEMP HARD CODING FOR OVER NIGHT RUNS!
+    // TODO RE ENABLE CHOICE!
+    choice = 1;     // TODO TEMP HARD CODING FOR OVER NIGHT RUNS!
     if(choice == 0) {
         printf("No GUI displayed, exiting now.\n");
     } else if(choice==1) {
         printf("1-Sequential,2-POSIX,3-libdispatch.h,4-libdispatch.h+striding\n");
-        scanf("%d",&guiMethod);                             // TODO Need error checking!
+        //scanf("%d",&guiMethod);                             // TODO Need error checking!
+        guiMethod = 3;  //TODO ReEnable guiMethod!
         if(guiMethod==1)
             ppmArray(countSingle);
         else if(guiMethod==2)

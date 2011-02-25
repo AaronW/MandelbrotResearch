@@ -1,9 +1,9 @@
 //
+//  Senior Research Project: Mandelbrot Dispatched
+//  Programmer: Aaron Weinberger
+//  Technical Advisor: Dr. Hastings
+//  February 22, 2011
 //  graphics.c
-//  MandelPPM
-//
-//  Created by Aaron on 2/22/11.
-//  Copyright 2011 __MyCompanyName__. All rights reserved.
 //
 #include <stdio.h>
 #include "graphics.h"
